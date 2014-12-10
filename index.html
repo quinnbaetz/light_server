@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+        <script src="https://cdn.socket.io/socket.io-1.2.1.js"></script>
+        <script>
+            var light = 0;
+            var brightness = 0;
+            var socket = io(window.location.host );
+
+            function sendMessage(data){
+                socket.emit('data', data);
+            }
+
+             socket.on('message', function (data) {
+                console.log(data);
+            });
+             var ctx;
+             function track(pageX, pageY){
+                    var newLight = parseInt(60*(pageX/$(document).width()));
+                    var newB = parseInt(256*(pageY/$(document).height()));
+                    if(newLight != light || brightness != newB){
+                        light = newLight;
+                        brightness = newB;
+
+                        ctx.clearRect(0, 0, 60, 60);
+                        ctx.fillStyle = "rgb("+brightness+","+(255-brightness)+',0)';
+                        ctx.fillRect(light, 0, 1, 1);
+                        console.log([light,brightness]);
+                        sendMessage([light,brightness]);
+                    }
+             }
+
+            $('document').ready(function(){
+                ctx = $("canvas")[0].getContext("2d");
+                $('body').mousemove(function(event){
+                    track(event.pageX, event.pageY);
+                });
+                $('body').on('touchmove', function (event) {
+                    var touch = event.originalEvent.touches[0];
+                    track(touch.pageX, touch.pageY);
+                });
+            });
+
+        </script>
+        <style>
+            canvas,html,body {
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas width="60" height="1">
+    </body>
+</html>
